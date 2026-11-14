@@ -19,7 +19,8 @@
 
 ## Non ancora verificato: va fatto sui telefoni
 
-- **Consegna reale di una notifica** su Android e su iPhone: dall’ambiente di lavoro non era possibile creare un abbonamento push vero (serve un telefono o un browser collegato a Google/Apple). Finché non si fa la prova in Preferenze → “Prova tra 1 minuto” con l’app chiusa, la funzione è da considerare **pronta ma non collaudata**.
+- **iPhone: collaudato il 14 novembre 2026.** Prova programmata inviata dal servizio alle 21:07 (Apple ha accettato l’invio) e notifica ricevuta con l’app chiusa.
+- **Android: consegna reale ancora da provare** (Preferenze → “Prova tra 1 minuto” con l’app chiusa).
 - Installazione dalla schermata Home, voce, musica e blocco schermo su dispositivi reali.
 
 ## Limiti reali delle notifiche
