@@ -41,6 +41,10 @@ Apertura con audio e “Salta apertura”; navigazione nelle 8 sezioni senza bar
 
 Consegna reale delle notifiche su Android e iPhone, installazione dalla schermata Home, voce e audio sui telefoni, blocco schermo, modalità aereo reale. Un test non disponibile non è un test superato.
 
+## Aggiunta successiva: tour guidato
+
+Provato in Chrome a 320 e 390 px: parte dopo l’apertura solo la prima volta, salva le scelte di ogni passo, testo personale mostrato come testo, nessuna barra orizzontale, Salta/Esc chiudono senza riproporlo, riapribile da Preferenze.
+
 ## Test automatici
 
 `TZ=Europe/Rome node tests/audit.cjs` (48) · `node tests/sw-audit.cjs` (6) · `node tests/push-audit.mjs` (10) · `TZ=Europe/Rome node tests/push-client-audit.cjs` (13).

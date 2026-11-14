@@ -6,6 +6,8 @@ Logo LitSun/Little Sunshine, monogramma LS e otto icone approvate; apertura con 
 
 ## Novità di questa versione
 
+- Tour guidato al primo avvio (6 passi: incoraggiamenti, routine con orari, movimento, focus, notifiche e installazione, backup). Si può saltare e rivedere da Preferenze; ogni passo salva subito le scelte.
+
 - Servizio notifiche `litsun-push` (Supabase) e pannello in Preferenze: attivazione, prova immediata, prova programmata a 1 minuto, disattivazione, opzione per le routine e per nascondere i titoli.
 - Gli avvisi si aggiornano da soli quando aggiungi, modifichi, elimini un impegno o spunti una routine (serve la rete in quel momento; altrimenti al primo ritorno online).
 - Toccando una notifica si apre LitSun nella sezione giusta.

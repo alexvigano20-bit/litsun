@@ -1,7 +1,7 @@
 const CACHE_PREFIX='litsun-'+encodeURIComponent(self.registration.scope)+'-';
-const CACHE=CACHE_PREFIX+'v10';
+const CACHE=CACHE_PREFIX+'v11';
 const PUSH_CACHE='litsun-push-'+encodeURIComponent(self.registration.scope);
-const ASSETS=["./", "./app.js", "./assets/audio/apertura.mp3", "./assets/intro-config.js", "./assets/litsun-app-icon.png", "./assets/litsun-logo.png", "./assets/nav-agenda.png", "./assets/nav-focus.png", "./assets/nav-impostazioni.png", "./assets/nav-movimento.png", "./assets/nav-oggi.png", "./assets/nav-progressi.png", "./assets/nav-routine.png", "./assets/nav-spesa.png", "./assets/push-config.js", "./confetti.js", "./data.js", "./favicon.ico", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./index.html", "./intro.js", "./life.js", "./manifest.webmanifest", "./music.js", "./push.js", "./rewards.js", "./style.css"];
+const ASSETS=["./", "./app.js", "./assets/audio/apertura.mp3", "./assets/intro-config.js", "./assets/litsun-app-icon.png", "./assets/litsun-logo.png", "./assets/nav-agenda.png", "./assets/nav-focus.png", "./assets/nav-impostazioni.png", "./assets/nav-movimento.png", "./assets/nav-oggi.png", "./assets/nav-progressi.png", "./assets/nav-routine.png", "./assets/nav-spesa.png", "./assets/push-config.js", "./confetti.js", "./data.js", "./favicon.ico", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./index.html", "./intro.js", "./life.js", "./manifest.webmanifest", "./music.js", "./push.js", "./rewards.js", "./style.css", "./tour.js"];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 // Offline l'audio viene chiesto "a pezzi" (Range): Safari richiede una risposta 206.
