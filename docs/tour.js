@@ -2,7 +2,7 @@
 // Parte una sola volta dopo l'apertura; si può saltare e rivedere da Preferenze.
 // Ogni passo salva subito le scelte: interrompere il tour non perde nulla.
 let tourStep = 0;
-const TOUR_STEPS = ['welcome', 'praise', 'routines', 'movement', 'focus', 'notify', 'done'];
+const TOUR_STEPS = ['welcome', 'praise', 'routines', 'movement', 'focus', 'access', 'done'];
 const TOUR_IDEAS = [['Prepara il necessario per domani', 'Sera', '21:30'], ['Fai due minuti lontano dagli schermi', 'Pomeriggio', '16:00'], ['Annaffia le piante', 'Mattina', '09:00'], ['Porta fuori la spazzatura', 'Sera', '21:00']];
 
 function maybeStartTour() {
@@ -44,15 +44,7 @@ function drawTour() {
   }
   if (step === 'movement') html = `${tourProgress()}<h2>Un po’ di movimento</h2><p class="muted">Sessioni a casa, senza salti. I minuti sono di attività e recupero: le spiegazioni si aggiungono e non vengono conteggiate.</p><label class="field">Tempo a disposizione<select name="duration">${options([[10, '10 minuti'], [12, '12 minuti'], [15, '15 minuti']], p.duration)}</select></label><label class="field" style="margin-top:12px">Di solito preferisci<select name="mode">${options([['strength', 'Forza leggera'], ['stretch', 'Mobilità e stretching']], p.mode)}</select></label><label class="field" style="margin-top:12px">Intensità<select name="level">${options([['gentle', 'Dolce · 30 s + 30 s recupero'], ['regular', 'Regolare · 40 s + 20 s recupero']], p.level)}</select></label><label class="tour-check"><input type="checkbox" name="voice" ${p.voice ? 'checked' : ''}> Guida vocale durante gli esercizi</label><p class="muted" style="font-size:12px">Se hai limitazioni o infortuni, concorda gli esercizi con un professionista.</p>${tourNav()}`;
   if (step === 'focus') html = `${tourProgress()}<h2>Tempo per studiare o concentrarti</h2><p class="muted">Blocchi di concentrazione con pause vere. Sono punti di partenza: puoi cambiarli in Focus.</p>${tourRadio('preset', '25-5', p.focus + '-' + p.break, '25 minuti + 5 di pausa', 'Per iniziare')}${tourRadio('preset', '45-10', p.focus + '-' + p.break, '45 minuti + 10 di pausa', 'Per sessioni più lunghe')}${!['25-5', '45-10'].includes(p.focus + '-' + p.break) ? tourRadio('preset', 'keep', 'keep', `Lascia come ora (${p.focus} + ${p.break})`) : ''}${tourNav()}`;
-  if (step === 'notify') {
-    const support = typeof pushSupport === 'function' ? pushSupport() : 'unconfigured', on = typeof pushActive === 'function' && pushActive();
-    let body;
-    if (on) body = '<p class="notice"><b>Notifiche già attive su questo telefono.</b></p>';
-    else if (support === 'ok') body = `<p class="muted">Con le notifiche LitSun ti avvisa di impegni e routine con orario <b>anche quando è chiusa</b>. Il telefono ti chiederà il permesso.</p><button class="btn" type="button" onclick="tourEnablePush()">Attiva le notifiche</button>`;
-    else body = `<p class="notice">${esc(typeof pushSupportText === 'function' ? pushSupportText(support) : '')}</p>`;
-    const install = isStandaloneTour() ? '' : `<details class="tour-install" ${support === 'ios-install' ? 'open' : ''}><summary>Installa LitSun sul telefono</summary><p class="muted" style="font-size:13px"><b>iPhone:</b> in Safari tocca Condividi → Aggiungi alla schermata Home, poi apri LitSun dall’icona.<br><b>Android:</b> in Chrome tocca il menu ⋮ → Installa app.</p></details>`;
-    html = `${tourProgress()}<h2>Promemoria anche a app chiusa</h2>${body}${install}<p class="muted" style="font-size:12px;margin-top:14px">Puoi farlo anche dopo da Preferenze → Notifiche.</p>${tourNav()}`;
-  }
+  if (step === 'access') html = `${tourProgress()}<h2>Gli ultimi accessi</h2><p class="muted">Per funzionare al meglio LitSun ha bisogno di poche cose. Tocca il pulsante: il telefono ti chiederà conferma. Nessun accesso a posizione, microfono, foto o contatti.</p><div class="tour-access" id="tourAccess">${tourAccessRows()}</div><button class="btn" type="button" id="tourGrant" onclick="tourGrantAll()">Concedi gli accessi</button>${isStandaloneTour() ? '' : `<details class="tour-install" ${typeof pushSupport === 'function' && pushSupport() === 'ios-install' ? 'open' : ''}><summary>Come installare LitSun sul telefono</summary><p class="muted" style="font-size:13px"><b>iPhone:</b> in Safari tocca Condividi → Aggiungi alla schermata Home, poi apri LitSun dall’icona e rivedi questo tour da Preferenze per attivare le notifiche.<br><b>Android:</b> in Chrome tocca il menu ⋮ → Installa app.</p></details>`}<p class="muted" style="font-size:12px;margin-top:14px">Puoi cambiare queste scelte quando vuoi dalle impostazioni del telefono o da Preferenze.</p>${tourNav()}`;
   if (step === 'done') html = `<span class="eyebrow">TUTTO PRONTO</span><h2>Ora LitSun è tua.</h2><p class="muted">Spunta le routine dalla pagina Oggi: al 100% ti aspetta una piccola festa.</p><p class="notice"><b>I tuoi dati restano su questo telefono.</b> Ogni tanto fai una copia da Preferenze → Esporta i dati, soprattutto prima di cambiare telefono.</p><p class="muted" style="font-size:12px">Puoi rivedere questo tour da Preferenze.</p><div class="toolbar"><button class="btn" type="submit">Inizia la giornata →</button></div>`;
   $('#dialog').innerHTML = `<form id="tourForm" class="tour-body">${html}</form>`;
   $('#tourForm').onsubmit = e => { e.preventDefault(); tourSave(new FormData(e.target)); if (step === 'done') finishTour(false); else tourGo(1); };
@@ -98,10 +90,38 @@ function tourGo(dir) {
   drawTour();
 }
 
-async function tourEnablePush() {
-  await enablePush();
-  if ($('#dialog').open && TOUR_STEPS[tourStep] === 'notify') drawTour();
+let tourAccess = { storage: null, voice: null };
+function tourAccessRows() {
+  const support = typeof pushSupport === 'function' ? pushSupport() : 'unconfigured', pushOn = typeof pushActive === 'function' && pushActive();
+  const row = (state, title, text) => `<div class="tour-access-row ${state}"><span aria-hidden="true">${state === 'on' ? '✓' : state === 'off' ? '–' : '○'}</span><div><b>${title}</b><small>${text}</small></div></div>`;
+  const notify = pushOn ? row('on', 'Notifiche', 'Attive: ti avviso anche con LitSun chiusa.')
+    : support === 'ok' ? row('todo', 'Notifiche', 'Per impegni e routine con orario, anche con LitSun chiusa.')
+    : row('off', 'Notifiche', esc(typeof pushSupportText === 'function' ? pushSupportText(support) : 'Non disponibili qui.'));
+  const storage = tourAccess.storage === true ? row('on', 'Memoria protetta', 'Il telefono non cancellerà i tuoi dati per fare spazio.')
+    : tourAccess.storage === false ? row('off', 'Memoria protetta', 'Il browser decide da solo: fai ogni tanto una copia da Preferenze → Esporta i dati.')
+    : row('todo', 'Memoria protetta', 'Chiede al telefono di non cancellare i tuoi dati quando manca spazio.');
+  const voice = tourAccess.voice === true ? row('on', 'Voce guida', 'Funziona: l’hai appena sentita.')
+    : tourAccess.voice === false ? row('off', 'Voce guida', 'Non disponibile: negli allenamenti leggerai le istruzioni.')
+    : row('todo', 'Voce guida', 'Prova la voce che ti accompagna negli allenamenti. Alza il volume.');
+  const screen = row('wakeLock' in navigator ? 'on' : 'off', 'Schermo acceso', 'wakeLock' in navigator ? 'Durante allenamento e focus lo schermo resta acceso da solo.' : 'Questo telefono non lo consente: tocca lo schermo ogni tanto durante le sessioni.');
+  return notify + storage + voice + screen;
 }
+
+// Un solo tocco: voce (sblocca l'audio), notifiche (richiede il gesto), memoria persistente.
+async function tourGrantAll() {
+  const button = $('#tourGrant');
+  if (button) { button.disabled = true; button.textContent = 'Un momento…'; }
+  if ('speechSynthesis' in window) {
+    tourAccess.voice = null;
+    speak('Ciao! Sono la guida di LitSun. Ti accompagnerò negli allenamenti.', true, { onStart: () => { tourAccess.voice = true; tourRefreshAccess(); }, onUnavailable: () => { tourAccess.voice = false; tourRefreshAccess(); } });
+    setTimeout(() => { if (tourAccess.voice === null) { tourAccess.voice = false; tourRefreshAccess(); } }, 6000);
+  } else tourAccess.voice = false;
+  if (typeof pushSupport === 'function' && pushSupport() === 'ok' && !pushActive()) await enablePush();
+  try { tourAccess.storage = navigator.storage?.persist ? (await navigator.storage.persisted()) || await navigator.storage.persist() : false; } catch { tourAccess.storage = false; }
+  tourRefreshAccess();
+  if (button) { button.disabled = false; button.textContent = 'Riprova'; }
+}
+function tourRefreshAccess() { const el = $('#tourAccess'); if (el && $('#dialog').open) el.innerHTML = tourAccessRows(); }
 
 function finishTour(skipped) {
   state.prefs.tourDone = true;
