@@ -94,6 +94,35 @@ function app(wallIso) {
     assert.ok(a.store.has('litsun-push')); assert.ok(!a.run('JSON.stringify(state)').includes('token'));
   });
 
+  await test('routine di oggi in ordine di orario; senza orario secondo il momento della giornata', () => {
+    const a = app('2026-11-14T07:00:00');
+    a.run("state.tasks=[{id:1,title:'Sera',slot:'Sera',time:'20:30',days:[6]},{id:2,title:'Presto',slot:'Mattina',time:'07:30',days:[6]},{id:3,title:'Senza orario',slot:'Pomeriggio',days:[6]},{id:4,title:'Mezzogiorno',slot:'Mattina',time:'12:00',days:[6]}]");
+    assert.equal(a.run("todayTasks().map(t=>t.title).join('|')"), 'Presto|Mezzogiorno|Senza orario|Sera');
+  });
+  await test('allenamento aggiunto una sola volta alla checklist, anche dopo importazione', () => {
+    const a = app('2026-11-14T07:00:00');
+    a.run('upgradeState();upgradeState()');
+    assert.equal(a.run("state.tasks.filter(t=>t.kind==='workout').length"), 1);
+    assert.ok(a.run('validateState(JSON.parse(JSON.stringify(state)))&&true'));
+    assert.throws(() => a.run("validateState({...JSON.parse(JSON.stringify(state)),tasks:[{...state.tasks[0],kind:'altro'}]})"));
+  });
+  await test('allenamento completato spunta da solo la routine; interrotto no', () => {
+    const a = app('2026-11-14T07:00:00');
+    a.run("upgradeState();rewardActivity=()=>{};rewardRoutine=()=>{};const w=state.tasks.find(t=>t.kind==='workout').id");
+    a.run("active={type:'workout',label:'Forza leggera',steps:[{seconds:1}],index:0,elapsed:30,skipped:0,exits:0,logDate:day()};finish(false)");
+    assert.equal(a.run('checked(w)'), false);
+    a.run("active={type:'workout',label:'Forza leggera',steps:[{seconds:1}],index:0,elapsed:600,skipped:1,exits:0,logDate:day()};finish(true)");
+    assert.equal(a.run('checked(w)'), true);
+    a.run("active={type:'workout',label:'Forza leggera',steps:[{seconds:1}],index:0,elapsed:600,skipped:0,exits:0,logDate:'2026-11-13'};state.checks={};finish(true)");
+    assert.equal(a.run('checked(w)'), false, 'sessione del giorno prima non spunta oggi');
+  });
+  await test('al 100% grazie all’allenamento parte la festa della giornata', () => {
+    const a = app('2026-11-14T07:00:00');
+    a.run("state.tasks=[{id:1,title:'Letto',slot:'Mattina',days:[6]}];state.homeUpgrade=true;upgradeState();let fest=0;rewardActivity=()=>{};rewardRoutine=()=>fest++;state.checks[day()]={1:true}");
+    a.run("active={type:'workout',label:'x',steps:[{seconds:1}],index:0,elapsed:600,skipped:0,exits:0,logDate:day()};finish(true)");
+    assert.equal(a.run('fest'), 1);
+  });
+
   // Service worker: notifiche e audio offline
   const handlers = {}, shown = [], scope = 'https://example.org/litsun/', posted = [], opened = [];
   const entries = new Map();
@@ -132,5 +161,5 @@ function app(wallIso) {
     handlers.fetch({ request: { url: scope + 'assets/audio/apertura.mp3', method: 'GET', mode: 'no-cors', headers: new Headers({ range: 'bytes=5000-' }) }, respondWith: p => res = p });
     assert.equal((await res).status, 416);
   });
-  console.log(`\n${passed} scenari notifiche (telefono simulato e service worker) superati. La consegna reale va provata su Android e iPhone.`);
+  console.log(`\n${passed} scenari (notifiche, routine e service worker; telefono simulato) superati. La consegna reale va provata su Android e iPhone.`);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -6,6 +6,9 @@ Logo LitSun/Little Sunshine, monogramma LS e otto icone approvate; apertura con 
 
 ## Novità di questa versione
 
+- Routine in ordine di orario (Oggi, Routine, tour). Quelle senza orario stanno all’inizio del loro momento della giornata.
+- “Allenamento LitSun” sempre presente nella checklist (aggiunto anche a chi usa già l’app, una sola volta): si spunta da solo quando completi una sessione in Movimento, si può spuntare a mano, ha il pulsante “Inizia” e si può modificare o eliminare come le altre.
+
 - Tour guidato al primo avvio (incoraggiamenti, routine con orari, movimento, focus, accessi con un solo tocco: notifiche, memoria protetta, prova della voce, schermo acceso; installazione e backup). Si può saltare e rivedere da Preferenze; ogni passo salva subito le scelte.
 
 - Servizio notifiche `litsun-push` (Supabase) e pannello in Preferenze: attivazione, prova immediata, prova programmata a 1 minuto, disattivazione, opzione per le routine e per nascondere i titoli.
